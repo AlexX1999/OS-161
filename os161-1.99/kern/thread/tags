@@ -1,0 +1,96 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+MIGRATE_HARDCLOCKS	clock.c	55;"	d	file:
+MINI_PER_SECOND	clock.c	69;"	d	file:
+P	synch.c	/^P(struct semaphore *sem)$/;"	f
+SCHEDULE_HARDCLOCKS	clock.c	54;"	d	file:
+SPINLOCK_INLINE	spinlock.c	31;"	d	file:
+SPL_INLINE	spl.c	31;"	d	file:
+THREADINLINE	thread.c	34;"	d	file:
+THREAD_STACK_MAGIC	thread.c	58;"	d	file:
+V	synch.c	/^V(struct semaphore *sem)$/;"	f
+allcpus	thread.c	/^static struct cpuarray allcpus;$/;"	v	typeref:struct:cpuarray	file:
+clocknap	clock.c	/^clocknap(int num_ticks)$/;"	f
+clocksleep	clock.c	/^clocksleep(int num_secs)$/;"	f
+cpu	thread.c	/^DECLARRAY(cpu);$/;"	v
+cpu_create	thread.c	/^cpu_create(unsigned hardware_number)$/;"	f
+cpu_hatch	thread.c	/^cpu_hatch(unsigned software_number)$/;"	f
+cpu_startup_sem	thread.c	/^static struct semaphore *cpu_startup_sem;$/;"	v	typeref:struct:semaphore	file:
+cv_broadcast	synch.c	/^cv_broadcast(struct cv *cv, struct lock *lock)$/;"	f
+cv_create	synch.c	/^cv_create(const char *name)$/;"	f
+cv_destroy	synch.c	/^cv_destroy(struct cv *cv)$/;"	f
+cv_signal	synch.c	/^cv_signal(struct cv *cv, struct lock *lock)$/;"	f
+cv_wait	synch.c	/^cv_wait(struct cv *cv, struct lock *lock)$/;"	f
+exorcise	thread.c	/^exorcise(void)$/;"	f	file:
+hardclock	clock.c	/^hardclock(void)$/;"	f
+hardclock_bootstrap	clock.c	/^hardclock_bootstrap(void)$/;"	f
+interprocessor_interrupt	thread.c	/^interprocessor_interrupt(void)$/;"	f
+ipi_broadcast	thread.c	/^ipi_broadcast(int code)$/;"	f
+ipi_send	thread.c	/^ipi_send(struct cpu *target, int code)$/;"	f
+ipi_tlbshootdown	thread.c	/^ipi_tlbshootdown(struct cpu *target, const struct tlbshootdown *mapping)$/;"	f
+lbolt	clock.c	/^static struct wchan *lbolt;$/;"	v	typeref:struct:wchan	file:
+lock_acquire	synch.c	/^lock_acquire(struct lock *lock)$/;"	f
+lock_create	synch.c	/^lock_create(const char *name)$/;"	f
+lock_destroy	synch.c	/^lock_destroy(struct lock *lock)$/;"	f
+lock_do_i_hold	synch.c	/^lock_do_i_hold(struct lock *lock)$/;"	f
+lock_release	synch.c	/^lock_release(struct lock *lock)$/;"	f
+minibolt	clock.c	/^static struct wchan *minibolt;$/;"	v	typeref:struct:wchan	file:
+minicount	clock.c	/^static int minicount;$/;"	v	file:
+schedule	thread.c	/^schedule(void)$/;"	f
+sem_create	synch.c	/^sem_create(const char *name, int initial_count)$/;"	f
+sem_destroy	synch.c	/^sem_destroy(struct semaphore *sem)$/;"	f
+spinlock_acquire	spinlock.c	/^spinlock_acquire(struct spinlock *lk)$/;"	f
+spinlock_cleanup	spinlock.c	/^spinlock_cleanup(struct spinlock *lk)$/;"	f
+spinlock_do_i_hold	spinlock.c	/^spinlock_do_i_hold(struct spinlock *lk)$/;"	f
+spinlock_init	spinlock.c	/^spinlock_init(struct spinlock *lk)$/;"	f
+spinlock_release	spinlock.c	/^spinlock_release(struct spinlock *lk)$/;"	f
+spllower	spl.c	/^spllower(int oldspl, int newspl)$/;"	f
+splraise	spl.c	/^splraise(int oldspl, int newspl)$/;"	f
+splx	spl.c	/^splx(int spl)$/;"	f
+thread_bootstrap	thread.c	/^thread_bootstrap(void)$/;"	f
+thread_checkstack	thread.c	/^thread_checkstack(struct thread *thread)$/;"	f	file:
+thread_checkstack_init	thread.c	/^thread_checkstack_init(struct thread *thread)$/;"	f	file:
+thread_consider_migration	thread.c	/^thread_consider_migration(void)$/;"	f
+thread_create	thread.c	/^thread_create(const char *name)$/;"	f	file:
+thread_destroy	thread.c	/^thread_destroy(struct thread *thread)$/;"	f	file:
+thread_exit	thread.c	/^thread_exit(void)$/;"	f
+thread_fork	thread.c	/^thread_fork(const char *name,$/;"	f
+thread_make_runnable	thread.c	/^thread_make_runnable(struct thread *target, bool already_have_lock)$/;"	f	file:
+thread_panic	thread.c	/^thread_panic(void)$/;"	f
+thread_shutdown	thread.c	/^thread_shutdown(void)$/;"	f
+thread_start_cpus	thread.c	/^thread_start_cpus(void)$/;"	f
+thread_startup	thread.c	/^thread_startup(void (*entrypoint)(void *data1, unsigned long data2),$/;"	f
+thread_switch	thread.c	/^thread_switch(threadstate_t newstate, struct wchan *wc)$/;"	f	file:
+thread_yield	thread.c	/^thread_yield(void)$/;"	f
+threadlist_addhead	threadlist.c	/^threadlist_addhead(struct threadlist *tl, struct thread *t)$/;"	f
+threadlist_addtail	threadlist.c	/^threadlist_addtail(struct threadlist *tl, struct thread *t)$/;"	f
+threadlist_cleanup	threadlist.c	/^threadlist_cleanup(struct threadlist *tl)$/;"	f
+threadlist_init	threadlist.c	/^threadlist_init(struct threadlist *tl)$/;"	f
+threadlist_insertafter	threadlist.c	/^threadlist_insertafter(struct threadlist *tl,$/;"	f
+threadlist_insertafternode	threadlist.c	/^threadlist_insertafternode(struct threadlistnode *onlist, struct thread *t)$/;"	f	file:
+threadlist_insertbefore	threadlist.c	/^threadlist_insertbefore(struct threadlist *tl,$/;"	f
+threadlist_insertbeforenode	threadlist.c	/^threadlist_insertbeforenode(struct thread *t, struct threadlistnode *onlist)$/;"	f	file:
+threadlist_isempty	threadlist.c	/^threadlist_isempty(struct threadlist *tl)$/;"	f
+threadlist_remhead	threadlist.c	/^threadlist_remhead(struct threadlist *tl)$/;"	f
+threadlist_remove	threadlist.c	/^threadlist_remove(struct threadlist *tl, struct thread *t)$/;"	f
+threadlist_removenode	threadlist.c	/^threadlist_removenode(struct threadlistnode *tln)$/;"	f	file:
+threadlist_remtail	threadlist.c	/^threadlist_remtail(struct threadlist *tl)$/;"	f
+threadlistnode_cleanup	threadlist.c	/^threadlistnode_cleanup(struct threadlistnode *tln)$/;"	f
+threadlistnode_init	threadlist.c	/^threadlistnode_init(struct threadlistnode *tln, struct thread *t)$/;"	f
+timerclock	clock.c	/^timerclock(void)$/;"	f
+wc_lock	thread.c	/^	struct spinlock wc_lock;	\/* lock for mutual exclusion *\/$/;"	m	struct:wchan	typeref:struct:wchan::spinlock	file:
+wc_name	thread.c	/^	const char *wc_name;		\/* name for this channel *\/$/;"	m	struct:wchan	file:
+wc_threads	thread.c	/^	struct threadlist wc_threads;	\/* list of waiting threads *\/$/;"	m	struct:wchan	typeref:struct:wchan::threadlist	file:
+wchan	thread.c	/^struct wchan {$/;"	s	file:
+wchan_create	thread.c	/^wchan_create(const char *name)$/;"	f
+wchan_destroy	thread.c	/^wchan_destroy(struct wchan *wc)$/;"	f
+wchan_isempty	thread.c	/^wchan_isempty(struct wchan *wc)$/;"	f
+wchan_lock	thread.c	/^wchan_lock(struct wchan *wc)$/;"	f
+wchan_sleep	thread.c	/^wchan_sleep(struct wchan *wc)$/;"	f
+wchan_unlock	thread.c	/^wchan_unlock(struct wchan *wc)$/;"	f
+wchan_wakeall	thread.c	/^wchan_wakeall(struct wchan *wc)$/;"	f
+wchan_wakeone	thread.c	/^wchan_wakeone(struct wchan *wc)$/;"	f
