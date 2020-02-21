@@ -9,6 +9,7 @@
 #include <thread.h>
 #include <addrspace.h>
 #include <copyinout.h>
+#include <../arch/mips/include/trapframe.h>
 #include "opt-A2.h"
 
   /* this implementation of sys__exit does not do anything with the exit code */
@@ -58,7 +59,7 @@ sys_getpid(pid_t *retval)
   /* you need to fix this to make it work properly */
   *retval = 1;
 #if OPT_A2
-  *retval = curproc->pid
+  *retval = curproc->pid;
 #endif
   return(0);
 }
@@ -97,17 +98,6 @@ sys_waitpid(pid_t pid,
 }
 
 #if OPT_A2
-static void
-entrypoint(void *data1, unsigned long data2)
-{
-    (void)data2;
-    struct trapframe tf = *(struct trapframe *)data1;
-    tf.tf_v0 = 0;
-    tf.tf_a3 = 0;
-    tf.tf_epc += 4;
-    mips_usermode(&tf);
-}
-
 int
 proc_fork(struct trapframe *tf, pid_t *ret_pid) 
 {
@@ -149,8 +139,7 @@ proc_fork(struct trapframe *tf, pid_t *ret_pid)
     struct trapframe *heap_tf = kmalloc(sizeof(*tf));
     *heap_tf = *tf;
     // Create a thread for child proc to run
-    thread_fork("Entrypoint", child, &entrypoint, heap_tf, 0);
-    kfree(heap_tf);
+    thread_fork("Entrypoint", child, &enter_forked_process, heap_tf, 0);
     
     return 0;
 }

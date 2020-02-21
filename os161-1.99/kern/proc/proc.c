@@ -73,7 +73,7 @@ struct semaphore *no_proc_sem;
 
 #if OPT_A2
 volatile int pid_counter;
-struct lock *pid_lk;
+struct spinlock *pid_splk;
 #endif
 
 
@@ -119,10 +119,10 @@ proc_create(const char *name)
     }
 
     // PID Assignment
-    lock_acquire(pid_lk);
+    spinlock_acquire(pid_splk);
     proc->pid = pid_counter;
     ++pid_counter;
-    lock_release(pid_lk);
+    spinlock_release(pid_splk);
 #endif
 
 	return proc;
@@ -215,10 +215,23 @@ proc_destroy(struct proc *proc)
 void
 proc_bootstrap(void)
 {
+#if OPT_A2
+  // Initialize pid counter and its synchnization premitive
+  pid_counter = 1;
+  pid_splk = kmalloc(sizeof(struct spinlock));
+  if (pid_splk == NULL) {
+      panic("pid_splk creation fails");
+  }
+  spinlock_init(pid_splk);
+#endif
   kproc = proc_create("[kernel]");
   if (kproc == NULL) {
     panic("proc_create for kproc failed\n");
   }
+#if OPT_A2
+  // Set up pid for kernel process
+  kproc->pid = 0;
+#endif
 #ifdef UW
   proc_count = 0;
   proc_count_mutex = sem_create("proc_count_mutex",1);
@@ -230,17 +243,6 @@ proc_bootstrap(void)
     panic("could not create no_proc_sem semaphore\n");
   }
 #endif // UW 
-
-#ifdef OPT-A2
-  // Set up pid for kernel process
-  kproc->pid = 0;
-  // Initialize pid counter and its synchnization premitive
-  pid_counter = 1;
-  pid_lk = lock_create("pid_lock");
-  if (pid_lk == NULL) {
-      panic("Unable to create pid lock");
-  }
-#endif
 }
 
 /*
