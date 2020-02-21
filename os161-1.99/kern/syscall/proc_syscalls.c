@@ -10,6 +10,7 @@
 #include <addrspace.h>
 #include <copyinout.h>
 #include <../arch/mips/include/trapframe.h>
+#include <synch.h>
 #include "opt-A2.h"
 
   /* this implementation of sys__exit does not do anything with the exit code */
@@ -18,10 +19,20 @@
 void sys__exit(int exitcode) {
 
   struct addrspace *as;
-  struct proc *p = curproc;
+  // struct proc *p = curproc;
+
+#if OPT_A2
+  curproc->exitcode = exitcode;
+  curproc->is_dead = true;
+  // Parent has called wait_pid on curproc
+  if (curproc->proc_lk != NULL && curproc->proc_cv != NULL) {
+    cv_signal(curproc->proc_cv, curproc->proc_lk);
+  }
+#else
   /* for now, just include this to keep the compiler from complaining about
      an unused variable */
   (void)exitcode;
+#endif
 
   DEBUG(DB_SYSCALL,"Syscall: _exit(%d)\n",exitcode);
 
@@ -43,7 +54,7 @@ void sys__exit(int exitcode) {
 
   /* if this is the last user process in the system, proc_destroy()
      will wake up the kernel menu thread */
-  proc_destroy(p);
+  //proc_destroy(p);
   
   thread_exit();
   /* thread_exit() does not return, so we should never get here */
@@ -57,9 +68,10 @@ sys_getpid(pid_t *retval)
 {
   /* for now, this is just a stub that always returns a PID of 1 */
   /* you need to fix this to make it work properly */
-  *retval = 1;
 #if OPT_A2
   *retval = curproc->pid;
+#else
+  *retval = 1;
 #endif
   return(0);
 }
@@ -87,8 +99,60 @@ sys_waitpid(pid_t pid,
   if (options != 0) {
     return(EINVAL);
   }
+#if OPT_A2
+  // Check if called on child
+  struct proc *wait_child = NULL;
+  int i = 0;
+  int max = array_num(curproc->children);
+  while (i < max) {
+    struct proc *child_ptr = (struct proc *)array_get(curproc->children, i);
+    if (child_ptr->pid == pid) {
+      wait_child = child_ptr;
+      break;
+    }
+    ++i;
+  }
+  if (wait_child == NULL) {
+    return EINVAL;
+  }
+  
+  // If the child is dead
+  if (wait_child->is_dead) {
+    exitstatus = _MKWAIT_EXIT(wait_child->exitcode);
+    proc_destroy(wait_child);
+  } else {
+    // If the child is alive
+    KASSERT(wait_child->proc_cv == NULL);
+    wait_child->proc_cv = cv_create("parent's bed");
+
+    KASSERT(wait_child->proc_lk == NULL);
+    wait_child->proc_lk = lock_create("parent's bed");
+
+    if (wait_child->proc_cv == NULL || wait_child->proc_lk == NULL) {
+      if (wait_child->proc_cv != NULL) {
+        cv_destroy(wait_child->proc_cv);
+      }
+      if (wait_child->proc_lk != NULL) {
+        lock_destroy(wait_child->proc_lk);
+      }
+      return ENOMEM;
+    }
+    
+    // Put parent proc to sleep
+    lock_acquire(curproc->proc_lk);
+    cv_wait(wait_child->proc_cv, wait_child->proc_lk);
+
+    // After signaled by its child
+    exitstatus = _MKWAIT_EXIT(wait_child->exitcode);
+
+    cv_destroy(wait_child->proc_cv);
+    lock_destroy(wait_child->proc_lk);
+    proc_destroy(wait_child);
+  }
+#else
   /* for now, just pretend the exitstatus is 0 */
   exitstatus = 0;
+#endif
   result = copyout((void *)&exitstatus,status,sizeof(int));
   if (result) {
     return(result);

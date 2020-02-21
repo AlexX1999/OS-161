@@ -117,6 +117,10 @@ proc_create(const char *name)
         kfree(proc);
         return NULL;
     }
+    proc->proc_cv = NULL;
+    proc->proc_lk = NULL;
+    proc->is_dead = false;
+    proc->exitcode = 0;
 
     // PID Assignment
     spinlock_acquire(pid_splk);
@@ -187,6 +191,17 @@ proc_destroy(struct proc *proc)
 
 	threadarray_cleanup(&proc->p_threads);
 	spinlock_cleanup(&proc->p_lock);
+
+#if OPT_A2
+    int j = 0;
+    int max = array_num(proc->children);
+    while (j < max) {
+      struct proc *child_ptr = (struct proc *)array_get(proc->children, j);
+      child_ptr->parent_proc = NULL;
+      ++j;
+    }
+    array_destroy(proc->children);
+#endif
 
 	kfree(proc->p_name);
 	kfree(proc);

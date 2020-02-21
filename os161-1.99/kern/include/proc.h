@@ -76,6 +76,10 @@ struct proc {
   pid_t pid;
   struct proc *parent_proc;
   struct array *children;
+  struct lock *proc_lk;
+  struct cv *proc_cv;
+  bool is_dead;
+  int exitcode;
 #endif
 };
 
