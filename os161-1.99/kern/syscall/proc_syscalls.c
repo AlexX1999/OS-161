@@ -9,6 +9,7 @@
 #include <thread.h>
 #include <addrspace.h>
 #include <copyinout.h>
+#include "opt-A2.h"
 
   /* this implementation of sys__exit does not do anything with the exit code */
   /* this needs to be fixed to get exit() and waitpid() working properly */
@@ -56,6 +57,9 @@ sys_getpid(pid_t *retval)
   /* for now, this is just a stub that always returns a PID of 1 */
   /* you need to fix this to make it work properly */
   *retval = 1;
+#if OPT_A2
+  *retval = curproc->pid
+#endif
   return(0);
 }
 
@@ -92,3 +96,62 @@ sys_waitpid(pid_t pid,
   return(0);
 }
 
+#if OPT_A2
+static void
+entrypoint(void *data1, unsigned long data2)
+{
+    (void)data2;
+    struct trapframe tf = *(struct trapframe *)data1;
+    tf.tf_v0 = 0;
+    tf.tf_a3 = 0;
+    tf.tf_epc += 4;
+    mips_usermode(&tf);
+}
+
+int
+proc_fork(struct trapframe *tf, pid_t *ret_pid) 
+{
+    // Create child process
+    struct proc *child = NULL;
+    child = proc_create_runprogram("DEADBEEF");
+    if (child == NULL) {
+        return ENOMEM;
+    }
+    *ret_pid = child->pid;
+
+    // Copy address space
+    if (curproc->p_addrspace == NULL) {
+        return EFAULT;
+    }
+    int retval;
+    struct addrspace *child_addrspace;
+    retval = as_copy(curproc->p_addrspace, &child_addrspace);
+    if (retval) {
+        return retval;
+    }
+    spinlock_acquire(&child->p_lock);
+    child->p_addrspace = child_addrspace;
+    spinlock_release(&child->p_lock);
+
+    // Establish child and parent relationship
+    child->parent_proc = curproc;
+    if (curproc->children == NULL) {
+        curproc->children = array_create();
+        if (curproc->children == NULL) {
+            return ENOMEM;
+        }
+    }
+    int add_child_result = array_add(curproc->children, child, NULL);
+    if (add_child_result) {
+        return add_child_result;
+    }
+    
+    struct trapframe *heap_tf = kmalloc(sizeof(*tf));
+    *heap_tf = *tf;
+    // Create a thread for child proc to run
+    thread_fork("Entrypoint", child, &entrypoint, heap_tf, 0);
+    kfree(heap_tf);
+    
+    return 0;
+}
+#endif

@@ -38,12 +38,15 @@
 
 #include <spinlock.h>
 #include <thread.h> /* required for struct threadarray */
+#include "opt-A2.h"
+#include <array.h>
 
 struct addrspace;
 struct vnode;
 #ifdef UW
 struct semaphore;
 #endif // UW
+
 
 /*
  * Process structure.
@@ -69,6 +72,11 @@ struct proc {
 #endif
 
 	/* add more material here as needed */
+#if OPT_A2
+  pid_t pid;
+  struct proc *parent_proc;
+  struct array *children;
+#endif
 };
 
 /* This is the process structure for the kernel and for kernel-only threads. */

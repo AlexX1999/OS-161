@@ -50,6 +50,8 @@
 #include <vfs.h>
 #include <synch.h>
 #include <kern/fcntl.h>  
+#include <array.h>
+#include "opt-A2.h"
 
 /*
  * The process for the kernel; this holds all the kernel-only threads.
@@ -69,6 +71,10 @@ static struct semaphore *proc_count_mutex;
 struct semaphore *no_proc_sem;   
 #endif  // UW
 
+#if OPT_A2
+volatile int pid_counter;
+struct lock *pid_lk;
+#endif
 
 
 /*
@@ -102,6 +108,22 @@ proc_create(const char *name)
 #ifdef UW
 	proc->console = NULL;
 #endif // UW
+
+#if OPT_A2
+    proc->parent_proc = NULL;
+    proc->children = array_create();
+    if (proc->children == NULL) {
+        kfree(proc->p_name);
+        kfree(proc);
+        return NULL;
+    }
+
+    // PID Assignment
+    lock_acquire(pid_lk);
+    proc->pid = pid_counter;
+    ++pid_counter;
+    lock_release(pid_lk);
+#endif
 
 	return proc;
 }
@@ -208,6 +230,17 @@ proc_bootstrap(void)
     panic("could not create no_proc_sem semaphore\n");
   }
 #endif // UW 
+
+#ifdef OPT-A2
+  // Set up pid for kernel process
+  kproc->pid = 0;
+  // Initialize pid counter and its synchnization premitive
+  pid_counter = 1;
+  pid_lk = lock_create("pid_lock");
+  if (pid_lk == NULL) {
+      panic("Unable to create pid lock");
+  }
+#endif
 }
 
 /*
