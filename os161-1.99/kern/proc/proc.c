@@ -62,8 +62,13 @@ struct proc *kproc;
  * Mechanism for making the kernel menu thread sleep while processes are running
  */
 #ifdef UW
+
+#if OPT_A2
+volatile unsigned int proc_count;
+#else
 /* count of the number of processes, excluding kproc */
 static volatile unsigned int proc_count;
+#endif
 /* provides mutual exclusion for proc_count */
 /* it would be better to use a lock here, but we use a semaphore because locks are not implemented in the base kernel */ 
 static struct semaphore *proc_count_mutex;
@@ -193,12 +198,10 @@ proc_destroy(struct proc *proc)
 	spinlock_cleanup(&proc->p_lock);
 
 #if OPT_A2
-    int j = 0;
-    int max = array_num(proc->children);
-    while (j < max) {
-      struct proc *child_ptr = (struct proc *)array_get(proc->children, j);
+    while (proc->children->num > 0) {
+      struct proc *child_ptr = (struct proc *)array_get(proc->children, 0);
       child_ptr->parent_proc = NULL;
-      ++j;
+      array_remove(proc->children, 0);
     }
     array_destroy(proc->children);
 #endif

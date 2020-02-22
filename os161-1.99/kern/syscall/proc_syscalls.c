@@ -19,14 +19,41 @@
 void sys__exit(int exitcode) {
 
   struct addrspace *as;
-  // struct proc *p = curproc;
+  struct proc *p = curproc;
 
 #if OPT_A2
   curproc->exitcode = exitcode;
   curproc->is_dead = true;
-  // Parent has called wait_pid on curproc
-  if (curproc->proc_lk != NULL && curproc->proc_cv != NULL) {
-    cv_signal(curproc->proc_cv, curproc->proc_lk);
+  bool is_destroy = false;
+  if (curproc->parent_proc == NULL) {
+    is_destroy = true;
+  } else {
+    // Parent has called wait_pid on curproc
+    if (curproc->proc_lk != NULL && curproc->proc_cv != NULL) {
+      cv_signal(curproc->proc_cv, curproc->proc_lk);
+    }
+  }
+  // Check if all children are dead
+  bool all_dead = true;
+  int i = 0;
+  int max = array_num(curproc->children);
+  while (i < max) {
+    struct proc *child = (struct proc *)array_get(curproc->children, i);
+    if (!(child->is_dead)) {
+      all_dead = false;
+      break;
+    }
+    ++i;
+  }
+  // Delete all children
+  if (all_dead) {
+    int j = 0;
+    while (j < max) {
+      struct proc *child2 = (struct proc *)array_get(curproc->children, j);
+      proc_destroy(child2);
+      array_remove(curproc->children, j);
+      ++j;
+    }
   }
 #else
   /* for now, just include this to keep the compiler from complaining about
@@ -54,8 +81,13 @@ void sys__exit(int exitcode) {
 
   /* if this is the last user process in the system, proc_destroy()
      will wake up the kernel menu thread */
-  //proc_destroy(p);
-  
+#if OPT_A2
+  if (is_destroy) {
+    proc_destroy(p);
+  }
+#else
+  proc_destroy(p);
+#endif
   thread_exit();
   /* thread_exit() does not return, so we should never get here */
   panic("return from thread_exit in sys_exit\n");
@@ -139,13 +171,14 @@ sys_waitpid(pid_t pid,
     }
     
     // Put parent proc to sleep
-    lock_acquire(curproc->proc_lk);
+    lock_acquire(wait_child->proc_lk);
     cv_wait(wait_child->proc_cv, wait_child->proc_lk);
 
     // After signaled by its child
     exitstatus = _MKWAIT_EXIT(wait_child->exitcode);
 
     cv_destroy(wait_child->proc_cv);
+    lock_release(wait_child->proc_lk);
     lock_destroy(wait_child->proc_lk);
     proc_destroy(wait_child);
   }

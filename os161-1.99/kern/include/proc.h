@@ -47,6 +47,10 @@ struct vnode;
 struct semaphore;
 #endif // UW
 
+#if OPT_A2
+volatile unsigned int proc_count;
+#endif
+
 
 /*
  * Process structure.
